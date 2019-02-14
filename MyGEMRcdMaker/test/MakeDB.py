@@ -22,15 +22,15 @@ process.PoolDBOutputService = cms.Service("PoolDBOutputService",
     timetype = cms.untracked.string('runnumber'),
     toPut = cms.VPSet(cms.PSet(
         record = cms.string('GEMAlignmentRcd'),
-        tag = cms.string('myGEMAlignment_test')
+        tag = cms.string('GEMAlignment_test')
     ),
-    cms.PSet(
-        record = cms.string('GEMAlignmentErrorRcd'),
-        tag = cms.string('myGEMAlignment_test')
-    ),
+    # cms.PSet(
+    #     record = cms.string('GEMAlignmentErrorRcd'),
+    #     tag = cms.string('myGEMAlignment_test')
+    # ),
     cms.PSet(
         record = cms.string('GEMAlignmentErrorExtendedRcd'),
-        tag = cms.string('myGEMAlignment_test')
+        tag = cms.string('GEMAlignmentErrorExtended_test')
     ))
 )
 

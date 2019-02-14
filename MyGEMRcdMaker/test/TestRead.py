@@ -11,26 +11,35 @@ process.PoolDBESSource = cms.ESSource("PoolDBESSource",
     DumpStat=cms.untracked.bool(True),
     toGet = cms.VPSet(cms.PSet(
         record = cms.string('GEMAlignmentRcd'),
-        tag = cms.string("myGEMAlignment_test"),
+        tag = cms.string("GEMAlignment_test"),
         data = cms.vstring('Alignments')
     ),
-    cms.PSet(
-        record = cms.string('GEMAlignmentErrorRcd'),
-        tag = cms.string("myGEMAlignment_test"),
-        data = cms.vstring('AlignmentErrors')
-    ),
+    # cms.PSet(
+    #     record = cms.string('GEMAlignmentErrorRcd'),
+    #     tag = cms.string("myGEMAlignment_test"),
+    #     data = cms.vstring('AlignmentErrors')
+    # ),
+                      
     cms.PSet(
         record = cms.string('GEMAlignmentErrorExtendedRcd'),
-        tag = cms.string("myGEMAlignment_test"),
+        tag = cms.string("GEMAlignmentErrorExtended_test"),
         data = cms.vstring('AlignmentErrorsExtended')
-    )),
+    )
+                      
+    ),
 )
 
 process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
-    toGet = cms.VPSet(cms.PSet(
-        record = cms.string('GEMAlignmentErrorRcd'),
-        data = cms.vstring('AlignmentErrors')
-    )),
+    toGet = cms.VPSet(
+        cms.PSet(
+            record = cms.string('GEMAlignmentRcd'),
+            data = cms.vstring('Alignments')
+        ),
+        cms.PSet(
+            record = cms.string('GEMAlignmentErrorExtendedRcd'),
+            data = cms.vstring('AlignmentErrorsExtended')
+        ),
+    ),
     verbose = cms.untracked.bool(True)
 )
 

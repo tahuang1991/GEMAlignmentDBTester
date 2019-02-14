@@ -117,8 +117,8 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   if( poolDbService.isAvailable() ) {
       poolDbService->writeOne( MyGEMAlignment, poolDbService->currentTime(),
                                                "GEMAlignmentRcd"  );
-      poolDbService->writeOne( MyGEMAlignmentError, poolDbService->currentTime(),
-                                               "GEMAlignmentErrorRcd"  );
+      // poolDbService->writeOne( MyGEMAlignmentError, poolDbService->currentTime(),
+      //                                          "GEMAlignmentErrorRcd"  );
       poolDbService->writeOne( MyGEMAlignmentErrorExtended, poolDbService->currentTime(),
                                                "GEMAlignmentErrorExtendedRcd"  );
   }
