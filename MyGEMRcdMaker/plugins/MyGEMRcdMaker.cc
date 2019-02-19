@@ -43,6 +43,16 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CondCore/DBOutputService/interface/PoolDBOutputService.h"
 
+#include "CLHEP/Vector/EulerAngles.h"
+#include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Geometry/Transform3D.h"
+#include "CondFormats/Alignment/interface/AlignTransform.h"
+
+ #include "DataFormats/DetId/interface/DetId.h"
+ #include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
+ #include "DataFormats/MuonDetId/interface/GEMDetId.h"
+
 //
 // class declaration
 //
@@ -108,10 +118,30 @@ void
 MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   Alignments* MyGEMAlignment = new Alignments();
-  AlignmentErrors* MyGEMAlignmentError = new AlignmentErrors();
+  // AlignmentErrors* MyGEMAlignmentError = new AlignmentErrors();
   AlignmentErrorsExtended* MyGEMAlignmentErrorExtended = new AlignmentErrorsExtended();
 
   // Form the data here
+  for (int re = -1; re <= 1; re = re+2) {
+    for (int st=1; st<=GEMDetId::maxStationId; ++st) {
+      for (int ri=1; ri<=1; ++ri) {
+	for (int la=1; la<=2; ++la) {
+	  for (int ch=1; ch<=30; ++ch) {
+	    if (ch == 27)
+	      MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(-2,0,0),
+							       AlignTransform::EulerAngles(0,0,0),
+							       GEMDetId(re, ri, st, la, ch, 0)
+							       ));
+	    else
+	      MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(0,0,0),
+							       AlignTransform::EulerAngles(0,0,0),
+							       GEMDetId(re, ri, st, la, ch, 0)
+							       ));	      
+	  }
+	}
+      }
+    }
+  }
 
   edm::Service<cond::service::PoolDBOutputService> poolDbService;
   if( poolDbService.isAvailable() ) {
