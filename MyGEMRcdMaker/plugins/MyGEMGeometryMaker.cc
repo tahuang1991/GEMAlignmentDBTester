@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    MyDB/MyGEMRcdMaker
-// Class:      MyGEMRcdMaker
+// Package:    MyDB/MyGEMGeometryMaker
+// Class:      MyGEMGeometryMaker
 //
-/**\class MyGEMRcdMaker MyGEMRcdMaker.cc MyDB/MyGEMRcdMaker/plugins/MyGEMRcdMaker.cc
+/**\class MyGEMGeometryMaker MyGEMGeometryMaker.cc MyDB/MyGEMGeometryMaker/plugins/MyGEMGeometryMaker.cc
 
  Description: [one line class summary]
 
@@ -53,6 +53,9 @@
  #include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
  #include "DataFormats/MuonDetId/interface/GEMDetId.h"
 
+#include "CondFormats/GeometryObjects/interface/RecoIdealGeometry.h"
+#include "FWCore/Framework/interface/EventSetup.h"
+
 //
 // class declaration
 //
@@ -65,10 +68,10 @@
 
 using reco::TrackCollection;
 
-class MyGEMRcdMaker : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
+class MyGEMGeometryMaker : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
    public:
-      explicit MyGEMRcdMaker(const edm::ParameterSet&);
-      ~MyGEMRcdMaker();
+      explicit MyGEMGeometryMaker(const edm::ParameterSet&);
+      ~MyGEMGeometryMaker();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -92,7 +95,7 @@ class MyGEMRcdMaker : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 //
 // constructors and destructor
 //
-MyGEMRcdMaker::MyGEMRcdMaker(const edm::ParameterSet& iConfig)
+MyGEMGeometryMaker::MyGEMGeometryMaker(const edm::ParameterSet& iConfig)
 
 {
    //now do what ever initialization is needed
@@ -100,7 +103,7 @@ MyGEMRcdMaker::MyGEMRcdMaker(const edm::ParameterSet& iConfig)
 }
 
 
-MyGEMRcdMaker::~MyGEMRcdMaker()
+MyGEMGeometryMaker::~MyGEMGeometryMaker()
 {
 
    // do anything here that needs to be done at desctruction time
@@ -112,82 +115,19 @@ MyGEMRcdMaker::~MyGEMRcdMaker()
 //
 // member functions
 //
-
+#include "Geometry/Records/interface/GEMRecoGeometryRcd.h"
 // ------------ method called for each event  ------------
 void
-MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+MyGEMGeometryMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  Alignments* MyGEMAlignment = new Alignments();
-  // AlignmentErrors* MyGEMAlignmentError = new AlignmentErrors();
-  AlignmentErrorsExtended* MyGEMAlignmentErrorExtended = new AlignmentErrorsExtended();
-
-  // Form the data here
-
-  // Needs to match with what GEMGeometry hands out, which is:
-  //
-  // 1 detid per eta partition
-  // 1 det id for chamber with roll=0
-  // 1 det id for the superchamber with layer=0, roll=0
-  //
-  // In the slice test, only re=-1, ri=1, st=1, ch=1,27,28,29,39 are filled
+  auto gemRcd = iSetup.get<GEMRecoGeometryRcd>();
+  edm::ESHandle<RecoIdealGeometry> MyGEM;
+  gemRcd.get(MyGEM);
   
-  for (int re = -1; re <= 1; re = re+2) {
-    for (int st=1; st<=GEMDetId::maxStationId; ++st) {
-      for (int ri=1; ri<=1; ++ri) {
-
-	// This is how it is in the slice test build
-	for (int ch : {1, 29, 27, 28, 30}) {
-	//for (int ch=1; ch<=30; ++ch) {
-	  
-	  // slice test conditions
-	  if (re != -1) continue;
-	  if (ri != 1) continue;
-	  if (st != 1) continue;
-	  if ((ch != 1) && (ch != 27) && (ch != 28) && (ch != 29) && (ch != 30)) continue;
-	  
-	  for (int la=1; la<=2; ++la) {
-	    for (int ro=1; ro<=8; ++ro) {
-	      MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(0,0,0),
-							       AlignTransform::EulerAngles(0,0,0),
-							       GEMDetId(re, ri, st, la, ch, ro)
-							       ));
-	      MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
-											      GEMDetId(re, ri, st, la, ch, ro)));
-	    }
-
-	    if (ch == 27)
-	      MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(-2,0,0),
-							       AlignTransform::EulerAngles(0,0,0),
-							       GEMDetId(re, ri, st, la, ch, 0)
-							       ));
-	    else
-	      MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(0,0,0),
-							       AlignTransform::EulerAngles(0,0,0),
-							       GEMDetId(re, ri, st, la, ch, 0)
-							       ));
-	    MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
-											    GEMDetId(re, ri, st, la, ch, 0)));
-	  }
-	    
-	  MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(0,0,0),
-							     AlignTransform::EulerAngles(0,0,0),
-							   GEMDetId(re, ri, st, 0, ch, 0)
-							   ));
-	  MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
-											  GEMDetId(re, ri, st, 0, ch, 0)));
-	}
-      }
-    }
-  }
-
   edm::Service<cond::service::PoolDBOutputService> poolDbService;
   if( poolDbService.isAvailable() ) {
-      poolDbService->writeOne( MyGEMAlignment, poolDbService->currentTime(),
-                                               "GEMAlignmentRcd"  );
-      // poolDbService->writeOne( MyGEMAlignmentError, poolDbService->currentTime(),
-      //                                          "GEMAlignmentErrorRcd"  );
-      poolDbService->writeOne( MyGEMAlignmentErrorExtended, poolDbService->currentTime(),
-                                               "GEMAlignmentErrorExtendedRcd"  );
+      poolDbService->writeOne( &*MyGEM, poolDbService->currentTime(),
+                                               "GEMRecoGeometryRcd"  );
   }
   else
       throw std::runtime_error("PoolDBService required.");
@@ -196,19 +136,19 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 // ------------ method called once each job just before starting event loop  ------------
 void
-MyGEMRcdMaker::beginJob()
+MyGEMGeometryMaker::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void
-MyGEMRcdMaker::endJob()
+MyGEMGeometryMaker::endJob()
 {
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-MyGEMRcdMaker::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+MyGEMGeometryMaker::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -223,4 +163,4 @@ MyGEMRcdMaker::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(MyGEMRcdMaker);
+DEFINE_FWK_MODULE(MyGEMGeometryMaker);

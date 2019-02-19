@@ -26,12 +26,12 @@
 #include <iomanip>
 #include <set>
 
-class GEMGeometryAnalyzer : public edm::one::EDAnalyzer<> {
+class GEMTestGeometryAnalyzer : public edm::one::EDAnalyzer<> {
 
 public: 
-  GEMGeometryAnalyzer( const edm::ParameterSet& pset);
+  GEMTestGeometryAnalyzer( const edm::ParameterSet& pset);
 
-  ~GEMGeometryAnalyzer() override;
+  ~GEMTestGeometryAnalyzer() override;
 
   void beginJob() override {}
   void analyze(edm::Event const& iEvent, edm::EventSetup const&) override;
@@ -47,28 +47,29 @@ private:
 };
 
 using namespace std;
-GEMGeometryAnalyzer::GEMGeometryAnalyzer( const edm::ParameterSet& /*iConfig*/ )
+GEMTestGeometryAnalyzer::GEMTestGeometryAnalyzer( const edm::ParameterSet& /*iConfig*/ )
   : dashedLineWidth_(104), dashedLine_( std::string(dashedLineWidth_, '-') ), 
-    myName_( "GEMGeometryAnalyzer" ) 
+    myName_( "GEMTestGeometryAnalyzer" ) 
 { 
   ofos.open("GEMtestOutput.out"); 
   ofos <<"======================== Opening output file"<< std::endl;
 }
 
 
-GEMGeometryAnalyzer::~GEMGeometryAnalyzer() 
+GEMTestGeometryAnalyzer::~GEMTestGeometryAnalyzer() 
 {
   ofos.close();
   ofos <<"======================== Closing output file"<< std::endl;
 }
 
 void
-GEMGeometryAnalyzer::analyze( const edm::Event& /*iEvent*/, const edm::EventSetup& iSetup )
+GEMTestGeometryAnalyzer::analyze( const edm::Event& /*iEvent*/, const edm::EventSetup& iSetup )
 {
+  ofos << myName() << ": Analyzer..." << std::endl;
+
   edm::ESHandle<GEMGeometry> pDD;
   iSetup.get<MuonGeometryRecord>().get(pDD);     
   
-  ofos << myName() << ": Analyzer..." << std::endl;
   ofos << "start " << dashedLine_ << std::endl;
 
   ofos << " Geometry node for GEMGeom is  " << &(*pDD) << endl;   
@@ -245,4 +246,4 @@ GEMGeometryAnalyzer::analyze( const edm::Event& /*iEvent*/, const edm::EventSetu
 
 //define this as a plug-in
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(GEMGeometryAnalyzer);
+DEFINE_FWK_MODULE(GEMTestGeometryAnalyzer);

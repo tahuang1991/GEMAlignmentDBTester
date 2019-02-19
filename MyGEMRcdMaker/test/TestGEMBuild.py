@@ -25,6 +25,11 @@ process.GlobalTag.toGet = cms.VPSet(
         record = cms.string('GEMAlignmentErrorExtendedRcd'),
         tag = cms.string("GEMAlignmentErrorExtended_test"),
         connect = cms.string("sqlite:./MyAlignment.db"),
+    ),
+    cms.PSet(
+        record = cms.string('GEMRecoGeometryRcd'),
+        tag = cms.string("GEMRECO_Geometry_10YV4"),
+        connect = cms.string("sqlite:./MyGEMGeometry.db"),
     )
 )
 
