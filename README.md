@@ -9,7 +9,11 @@ git cms-merge-topic -u watson-ij:gem-alignment-rcd-1050p1
 git clone https://github.com/watson-ij/GEMAlignmentDBTester.git
 scram b -j4
 cd GEMAlignmentDBTester/MyGEMRcdMaker/test
-cmsRun MakeDB.py
+# Code you might want to run
+cmsRun MakeDB.py  # Makes the GEM Alignment Rcd DB
+cmsRun TestRead.py  # Checks that the db created in previous cmd has the right tags
+cmsRun ReadGEMGeometry.py  # Reads GEM DB tag into annother db file
+cmsRun TestGEMBuild.py  # Tries to build and analyse (GEMTestGeometryAnalyzer.cc) GEM Geo
 ```
 
 or from a recent nightly
