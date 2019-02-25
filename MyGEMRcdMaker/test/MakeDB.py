@@ -5,8 +5,17 @@ process = cms.Process("MyGEMAlignmentRcdWriter")
 # Load CondDB service
 process.load("CondCore.CondDB.CondDB_cfi")
 
+process.load("Geometry.CMSCommonData.cmsExtendedGeometry2023D39XML_cfi")
+process.load("Geometry.MuonNumbering.muonNumberingInitialization_cfi")
+process.load("Geometry.GEMGeometryBuilder.gemGeometry_cfi")
+process.GEMGeometryESModule.applyAlignment = cms.bool(False)
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
+
 # output database (in this case local sqlite file)
-process.CondDB.connect = 'sqlite_file:MyAlignment.db'
+process.OutDB = process.CondDB.clone()
+process.OutDB.connect = 'sqlite_file:MyAlignment.db'
 
 # A data source must always be defined. We don't need it, so here's a dummy one.
 process.source = cms.Source("EmptyIOVSource",
@@ -18,7 +27,7 @@ process.source = cms.Source("EmptyIOVSource",
 
 # We define the output service.
 process.PoolDBOutputService = cms.Service("PoolDBOutputService",
-    process.CondDB,
+    process.OutDB,
     timetype = cms.untracked.string('runnumber'),
     toPut = cms.VPSet(cms.PSet(
         record = cms.string('GEMAlignmentRcd'),

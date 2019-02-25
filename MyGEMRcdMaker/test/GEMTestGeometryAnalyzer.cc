@@ -218,7 +218,7 @@ GEMTestGeometryAnalyzer::analyze( const edm::Event& /*iEvent*/, const edm::Event
 	      double cstrip1(roll->toGlobal(lEdge1).phi().degrees());
 	      double cstripN(roll->toGlobal(lEdgeN).phi().degrees());
 	      double dphi(cstripN - cstrip1);
-	      if (dphi < 0.) dphi += 360.;
+	      if (dphi < -360.) dphi += 360.;
 	      double deta(abs(beta - teta));
 	      const bool printDetails(true);
 	      if (printDetails) {

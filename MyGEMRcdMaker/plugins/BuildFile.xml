@@ -10,4 +10,10 @@
 <use name="FWCore/ParameterSet"/>
 <use name="DataFormats/TrackReco"/>
 <use name="CLHEP"/>
+
+<use name="Geometry/GEMGeometry"/>
+<use name="Geometry/GEMGeometryBuilder"/>
+
+<use name="Alignment/CommonAlignment" />
+
 <flags EDM_PLUGIN="1"/>

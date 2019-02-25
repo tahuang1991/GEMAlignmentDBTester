@@ -53,6 +53,11 @@
  #include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
  #include "DataFormats/MuonDetId/interface/GEMDetId.h"
 
+#include "Geometry/GEMGeometry/interface/GEMGeometry.h"
+#include "Geometry/Records/interface/MuonGeometryRecord.h"
+
+#include "Alignment/CommonAlignment/interface/Utilities.h"
+
 //
 // class declaration
 //
@@ -113,10 +118,16 @@ MyGEMRcdMaker::~MyGEMRcdMaker()
 // member functions
 //
 
+using CLHEP::Hep3Vector;
+using CLHEP::HepRotation;
 // ------------ method called for each event  ------------
 void
 MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+  // Get the GEM Geometry
+  edm::ESHandle<GEMGeometry> gemGeo;
+  iSetup.get<MuonGeometryRecord>().get(gemGeo);
+
   Alignments* MyGEMAlignment = new Alignments();
   // AlignmentErrors* MyGEMAlignmentError = new AlignmentErrors();
   AlignmentErrorsExtended* MyGEMAlignmentErrorExtended = new AlignmentErrorsExtended();
@@ -129,57 +140,56 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   // 1 det id for chamber with roll=0
   // 1 det id for the superchamber with layer=0, roll=0
   //
-  // In the slice test, only re=-1, ri=1, st=1, ch=1,27,28,29,39 are filled
-  
-  for (int re = -1; re <= 1; re = re+2) {
-    for (int st=1; st<=GEMDetId::maxStationId; ++st) {
-      for (int ri=1; ri<=1; ++ri) {
 
-	// This is how it is in the slice test build
-	for (int ch : {1, 29, 27, 28, 30}) {
-	//for (int ch=1; ch<=30; ++ch) {
-	  
-	  // slice test conditions
-	  if (re != -1) continue;
-	  if (ri != 1) continue;
-	  if (st != 1) continue;
-	  if ((ch != 1) && (ch != 27) && (ch != 28) && (ch != 29) && (ch != 30)) continue;
-	  
-	  for (int la=1; la<=2; ++la) {
-	    for (int ro=1; ro<=8; ++ro) {
-	      MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(0,0,0),
-							       AlignTransform::EulerAngles(0,0,0),
-							       GEMDetId(re, ri, st, la, ch, ro)
-							       ));
-	      MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
-											      GEMDetId(re, ri, st, la, ch, ro)));
-	    }
+  for (auto roll : gemGeo->etaPartitions()) {
+    auto center = roll->surface().toGlobal(LocalPoint(0,0,0));
+    auto rot = roll->surface().rotation();
+    // GEMDetId id = roll->id();
+    
+    // std::cerr << id << std::endl;
+    // std::cerr << "m" << rot.xx()<< " " << rot.yx() << " " << rot.zx() << std::endl
+    // 	      << " " << rot.xy()<< " " << rot.yy() << " " << rot.zy() << std::endl
+    // 	      << " " << rot.xz()<< " " << rot.yz() << " " << rot.zz() << std::endl << std::endl;
 
-	    if (ch == 27)
-	      MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(-2,0,0),
-							       AlignTransform::EulerAngles(0,0,0),
-							       GEMDetId(re, ri, st, la, ch, 0)
-							       ));
-	    else
-	      MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(0,0,0),
-							       AlignTransform::EulerAngles(0,0,0),
-							       GEMDetId(re, ri, st, la, ch, 0)
-							       ));
-	    MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
-											    GEMDetId(re, ri, st, la, ch, 0)));
-	  }
-	    
-	  MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(0,0,0),
-							     AlignTransform::EulerAngles(0,0,0),
-							   GEMDetId(re, ri, st, 0, ch, 0)
-							   ));
-	  MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
-											  GEMDetId(re, ri, st, 0, ch, 0)));
-	}
-      }
-    }
+    // The DDD inserts a reflection on y for even chambers, dont do this here
+    auto hrot = HepRotation(Hep3Vector(rot.xx(), rot.xy(), rot.xz()).unit(),
+			    //    			    (((roll->id().chamber()%2) == 0) ? -1 : 1) *
+    			     Hep3Vector(rot.yx(), rot.yy(), rot.yz()).unit(),
+    			    Hep3Vector(rot.zx(), rot.zy(), rot.zz()).unit()
+    			    );
+    auto euler = hrot.eulerAngles();
+    // std::cerr << "e " << euler.phi()<< " " << euler.theta() << " " << euler.psi() << std::endl << std::endl;
+
+    //    auto euler = align::toAngles(rot);
+    MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(center.x(), center.y(), center.z()),
+						     euler,
+    						     // CLHEP::HepEulerAngles(euler[0], euler[1], euler[2]),
+    						     roll->id()));
+    MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
+										    roll->id()));
   }
 
+  for (auto chmb : gemGeo->chambers()) {
+    auto center = chmb->surface().toGlobal(LocalPoint(0,0,0));
+    MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(center.x(), center.y(), center.z()),
+						     AlignTransform::EulerAngles(0,0,0),
+						     chmb->id()));    
+    MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
+										    chmb->id()));
+  }
+
+  for (auto sch : gemGeo->superChambers()) {
+    auto center = sch->surface().toGlobal(LocalPoint(0,0,0));
+    MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(center.x(), center.y(), center.z()),
+						     AlignTransform::EulerAngles(0,0,0),
+						     sch->id()));
+    MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
+										    sch->id()));
+  }
+  
+  // GeometryAligner expects ordering by raw ID
+  std::sort(MyGEMAlignment->m_align.begin(), MyGEMAlignment->m_align.end(), [](AlignTransform a, AlignTransform b){return a.rawId() < b.rawId();});
+  std::sort(MyGEMAlignmentErrorExtended->m_alignError.begin(), MyGEMAlignmentErrorExtended->m_alignError.end(), [](auto a, auto b){return a.rawId() < b.rawId();});
   edm::Service<cond::service::PoolDBOutputService> poolDbService;
   if( poolDbService.isAvailable() ) {
       poolDbService->writeOne( MyGEMAlignment, poolDbService->currentTime(),
