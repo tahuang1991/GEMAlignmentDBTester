@@ -10,8 +10,8 @@ process.load("Geometry.MuonNumbering.muonNumberingInitialization_cfi")
 process.load("Geometry.GEMGeometryBuilder.gemGeometry_cfi")
 process.GEMGeometryESModule.applyAlignment = cms.bool(False)
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
+#from Configuration.AlCa.GlobalTag import GlobalTag
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 
 # output database (in this case local sqlite file)
 process.OutDB = process.CondDB.clone()

@@ -78,8 +78,6 @@ def recoGeoLoad(score):
     elif "2023-GEMAL" == score:
        print("2023 with GEM alignment test")
        versionCheck(options.version)
-       process.load("Geometry.GEMGeometryBuilder.gemGeometry_cfi")
-       process.GEMGeometryESModule.applyAlignment = cms.bool(True)
        process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
        from Configuration.AlCa.autoCond import autoCond
        process.GlobalTag.globaltag = autoCond['run2_mc']
@@ -97,6 +95,7 @@ def recoGeoLoad(score):
              connect = cms.string("sqlite:./MyAlignment.db"),
           ),
        )
+       process.GEMGeometryESModule.applyAlignment = cms.bool(True)
 
 
     elif "2023" in score:

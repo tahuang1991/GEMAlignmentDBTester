@@ -144,26 +144,14 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   for (auto roll : gemGeo->etaPartitions()) {
     auto center = roll->surface().toGlobal(LocalPoint(0,0,0));
     auto rot = roll->surface().rotation();
-    // GEMDetId id = roll->id();
-    
-    // std::cerr << id << std::endl;
-    // std::cerr << "m" << rot.xx()<< " " << rot.yx() << " " << rot.zx() << std::endl
-    // 	      << " " << rot.xy()<< " " << rot.yy() << " " << rot.zy() << std::endl
-    // 	      << " " << rot.xz()<< " " << rot.yz() << " " << rot.zz() << std::endl << std::endl;
 
-    // The DDD inserts a reflection on y for even chambers, dont do this here
     auto hrot = HepRotation(Hep3Vector(rot.xx(), rot.xy(), rot.xz()).unit(),
-			    //    			    (((roll->id().chamber()%2) == 0) ? -1 : 1) *
-    			     Hep3Vector(rot.yx(), rot.yy(), rot.yz()).unit(),
+			    Hep3Vector(rot.yx(), rot.yy(), rot.yz()).unit(),
     			    Hep3Vector(rot.zx(), rot.zy(), rot.zz()).unit()
     			    );
-    auto euler = hrot.eulerAngles();
-    // std::cerr << "e " << euler.phi()<< " " << euler.theta() << " " << euler.psi() << std::endl << std::endl;
-
-    //    auto euler = align::toAngles(rot);
+    auto euler = hrot.inverse().eulerAngles();
     MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(center.x(), center.y(), center.z()),
 						     euler,
-    						     // CLHEP::HepEulerAngles(euler[0], euler[1], euler[2]),
     						     roll->id()));
     MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
 										    roll->id()));
@@ -171,17 +159,29 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   for (auto chmb : gemGeo->chambers()) {
     auto center = chmb->surface().toGlobal(LocalPoint(0,0,0));
+    auto rot = chmb->surface().rotation();
+    auto hrot = HepRotation(Hep3Vector(rot.xx(), rot.xy(), rot.xz()).unit(),
+			    Hep3Vector(rot.yx(), rot.yy(), rot.yz()).unit(),
+    			    Hep3Vector(rot.zx(), rot.zy(), rot.zz()).unit()
+    			    );
+    auto euler = hrot.inverse().eulerAngles();
     MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(center.x(), center.y(), center.z()),
-						     AlignTransform::EulerAngles(0,0,0),
-						     chmb->id()));    
+						     euler,
+						     chmb->id()));
     MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
 										    chmb->id()));
   }
 
   for (auto sch : gemGeo->superChambers()) {
     auto center = sch->surface().toGlobal(LocalPoint(0,0,0));
+    auto rot = sch->surface().rotation();
+    auto hrot = HepRotation(Hep3Vector(rot.xx(), rot.xy(), rot.xz()).unit(),
+			    Hep3Vector(rot.yx(), rot.yy(), rot.yz()).unit(),
+    			    Hep3Vector(rot.zx(), rot.zy(), rot.zz()).unit()
+    			    );
+    auto euler = hrot.inverse().eulerAngles();
     MyGEMAlignment->m_align.push_back(AlignTransform(AlignTransform::Translation(center.x(), center.y(), center.z()),
-						     AlignTransform::EulerAngles(0,0,0),
+						     euler,
 						     sch->id()));
     MyGEMAlignmentErrorExtended->m_alignError.push_back(AlignTransformErrorExtended(AlignTransformErrorExtended::SymMatrix(6),
 										    sch->id()));

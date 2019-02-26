@@ -14,6 +14,8 @@ cmsRun MakeDB.py  # Makes the GEM Alignment Rcd DB
 cmsRun TestRead.py  # Checks that the db created in previous cmd has the right tags
 cmsRun ReadGEMGeometry.py  # Reads GEM DB tag into annother db file
 cmsRun TestGEMBuild.py  # Tries to build and analyse (GEMTestGeometryAnalyzer.cc) GEM Geo
+cmsRun dumpSimGeometry_cfg.py tag=2023 version=D21 # Dump Sim Geo (has all components, eg electronics)
+cmsShow --sim-geom-file ./cmsSimGeom-2023D21.root -c $CMSSW_RELEASE_BASE/src/Fireworks/Core/macros/simGeo.fwc
 cmsRun dumpRecoGeometry_cfg.py tag=2023 version=D21 tgeo=True # Dump nominal
 cmsRun dumpRecoGeometry_cfg.py tag=2023-GEMAL version=D21 tgeo=True # Dump Aligned
 cmsShow --sim-geom-file ./cmsTGeoRecoGeom-2023-GEMAL.root -c $CMSSW_RELEASE_BASE/src/Fireworks/Core/macros/simGeo.fwc
