@@ -83,6 +83,8 @@ class MyGEMRcdMaker : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 
+      float zShift;
+
       // ----------member data ---------------------------
 };
 
@@ -97,11 +99,9 @@ class MyGEMRcdMaker : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 //
 // constructors and destructor
 //
-MyGEMRcdMaker::MyGEMRcdMaker(const edm::ParameterSet& iConfig)
-
+MyGEMRcdMaker::MyGEMRcdMaker(const edm::ParameterSet& p)
 {
-   //now do what ever initialization is needed
-
+  zShift = p.getParameter<double>("zShift");
 }
 
 
@@ -110,7 +110,6 @@ MyGEMRcdMaker::~MyGEMRcdMaker()
 
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
-
 }
 
 
@@ -142,7 +141,7 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //
 
   for (auto roll : gemGeo->etaPartitions()) {
-    auto center = roll->surface().toGlobal(LocalPoint(0,0,0));
+    auto center = roll->surface().toGlobal(LocalPoint(0,0,zShift));
     auto rot = roll->surface().rotation();
 
     auto hrot = HepRotation(Hep3Vector(rot.xx(), rot.xy(), rot.xz()).unit(),
@@ -158,7 +157,7 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   for (auto chmb : gemGeo->chambers()) {
-    auto center = chmb->surface().toGlobal(LocalPoint(0,0,0));
+    auto center = chmb->surface().toGlobal(LocalPoint(0,0,zShift));
     auto rot = chmb->surface().rotation();
     auto hrot = HepRotation(Hep3Vector(rot.xx(), rot.xy(), rot.xz()).unit(),
 			    Hep3Vector(rot.yx(), rot.yy(), rot.yz()).unit(),
@@ -173,7 +172,7 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   for (auto sch : gemGeo->superChambers()) {
-    auto center = sch->surface().toGlobal(LocalPoint(0,0,0));
+    auto center = sch->surface().toGlobal(LocalPoint(0,0,zShift));
     auto rot = sch->surface().rotation();
     auto hrot = HepRotation(Hep3Vector(rot.xx(), rot.xy(), rot.xz()).unit(),
 			    Hep3Vector(rot.yx(), rot.yy(), rot.yz()).unit(),
