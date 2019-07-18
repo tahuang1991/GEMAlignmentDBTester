@@ -78,12 +78,41 @@ class MyGEMRcdMaker : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 
+      //endcap = 1 (positive endcap) or 2, station = 0(ME0), 1(GE11),2(GE21) 
+      static const int Nendcap   = 2;
+      static const int Nstation  = 3;
+      static const int Nchamber  = 36;
+
    private:
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 
-      float zShift;
+
+      float xShift;//cm
+      float yShift;//cm
+      float zShift;//cm
+      float phixRotation;//rad
+      float phiyRotation;
+      float phizRotation;
+      //mode = 1, all chambers are misaligned in same way
+      //mode = 2, all chambers are misaligned randomly but only misaligned in one way, either xshift, or yshit, or zshift, or .. 
+      //mode = 3, all chambers are misaligned randomly in one or few ways
+      int alignedMode;
+
+      float xShift_ch[Nendcap][Nstation][Nchamber];
+      float yShift_ch[Nendcap][Nstation][Nchamber];
+      float zShift_ch[Nendcap][Nstation][Nchamber];
+      float phixRotation_ch[Nendcap][Nstation][Nchamber];//rad
+      float phiyRotation_ch[Nendcap][Nstation][Nchamber];
+      float phizRotation_ch[Nendcap][Nstation][Nchamber];
+      float xShiftmax;
+      float yShiftmax;
+      float zShiftmax;
+      float phixRotationmax;
+      float phiyRotationmax;
+      float phizRotationmax;
+      
 
       // ----------member data ---------------------------
 };
@@ -101,7 +130,13 @@ class MyGEMRcdMaker : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 //
 MyGEMRcdMaker::MyGEMRcdMaker(const edm::ParameterSet& p)
 {
+  xShift = p.getParameter<double>("xShift");
+  yShift = p.getParameter<double>("yShift");
   zShift = p.getParameter<double>("zShift");
+  phixRotation = p.getParameter<double>("phixRotation");
+  phiyRotation = p.getParameter<double>("phiyRotation");
+  phizRotation = p.getParameter<double>("phizRotation");
+
 }
 
 
