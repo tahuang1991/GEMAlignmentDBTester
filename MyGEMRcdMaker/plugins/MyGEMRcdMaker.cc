@@ -176,7 +176,7 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   //
 
   for (auto roll : gemGeo->etaPartitions()) {
-    auto center = roll->surface().toGlobal(LocalPoint(0,0,zShift));
+    auto center = roll->surface().toGlobal(LocalPoint(xShift, yShift,zShift));
     auto rot = roll->surface().rotation();
 
     auto hrot = HepRotation(Hep3Vector(rot.xx(), rot.xy(), rot.xz()).unit(),
@@ -192,7 +192,7 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   for (auto chmb : gemGeo->chambers()) {
-    auto center = chmb->surface().toGlobal(LocalPoint(0,0,zShift));
+    auto center = chmb->surface().toGlobal(LocalPoint(xShift,yShift,zShift));
     auto rot = chmb->surface().rotation();
     auto hrot = HepRotation(Hep3Vector(rot.xx(), rot.xy(), rot.xz()).unit(),
 			    Hep3Vector(rot.yx(), rot.yy(), rot.yz()).unit(),
@@ -207,7 +207,7 @@ MyGEMRcdMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   for (auto sch : gemGeo->superChambers()) {
-    auto center = sch->surface().toGlobal(LocalPoint(0,0,zShift));
+    auto center = sch->surface().toGlobal(LocalPoint(xShift, yShift, zShift));
     auto rot = sch->surface().rotation();
     auto hrot = HepRotation(Hep3Vector(rot.xx(), rot.xy(), rot.xz()).unit(),
 			    Hep3Vector(rot.yx(), rot.yy(), rot.yz()).unit(),
